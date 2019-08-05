@@ -13,7 +13,7 @@ var speed = 2;
 var mdown = 0;
 var diameter = Math.sqrt(Math.pow(window.innerHeight,2)+Math.pow(window.innerWidth,2));
 var baseRadius = diameter/42;
-var gravity = 10;
+var gravity = diameter/750;
 var lifetime = 1;
 
 
