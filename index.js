@@ -11,51 +11,90 @@ var endy = 0;
 var distance = 0;
 var speed = 2;
 var mdown = 0;
-var baseRadius = 300;
+var baseRadius = 200;
 var diameter = Math.sqrt(Math.pow(window.innerHeight,2)+Math.pow(window.innerWidth,2));
+var gravity = 5;
+var lifetime = 1;
 
-function Circle(x,y,radius,dx,dy){
+
+function Circle(x,y,radius,dx,dy,spark){
 	this.x = x;
 	this.y = y;
 	this.radius = radius;
 	this.spawnradius = radius;
 	this.dx = dx;
 	this.dy = dy;
+	this.spark = spark;
+	this.lt = lifetime*(Math.random()*(0.8)+0.2);
+	this.maxlt = this.lt;
 	
 	this.draw = function(){
 		c.strokeStyle = "#000000"
+		if(this.spark == 1){
+		c.fillStyle = `rgba(255,255,255,${this.lt/this.maxlt})`;
+		c.strokeStyle = "white";
+		}
 		c.setLineDash([]);
 		c.beginPath();
 		c.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
 		c.lineWidth = 2;
 		c.stroke();
 		c.fill();
+		c.fillStyle = 'black';
 	}
 	this.update = function(i){
 		if(this.x > innerWidth-this.radius || this.x < this.radius){
 			this.dx = -this.dx;
-			this.hit(i);
+			if(this.x > innerWidth-this.radius){
+				this.hit(i,1);
+			}else if(this.x < this.radius){
+				this.hit(i,-1);
+			}
 		}
 		if(this.y > innerHeight-this.radius || this.y < this.radius){
 			this.dy = -this.dy;
-			this.hit(i);
+			this.hit(i,1);
+		}
+		if(this.sparkle){
+		this.dy += gravity*1000;
+		}else{
+		this.dy += gravity*this.radius/baseRadius;
 		}
 		this.x += this.dx;
 		this.y += this.dy;
 		this.draw();
 	}
-	this.hit = function(i){
-		if(this.radius<50){
+	this.hit = function(i,d){
+		if(this.radius<this.spawnradius*0.1 || (this.radius<this.spawnradius*0.9 && this.spark) || (this.lt<=0 && this.spark)){
 			CircleArray.splice(i,1);
 		}else{
-		this.radius *= 0.9;
-		this.dx *= 0.9;
-		this.dy *= 0.9;
-		}
+			if(this.spark){
+				this.radius *= 0.8;
+				this.dx *= 0.8;
+				this.dy *= 0.8;
+			}else{
+				for(var j=0;j<5;j++){
+				rdx = d*Math.random()*100;
+				rdy = -Math.random()*50;
+				CircleArray.push(new Circle(this.x,this.y,this.radius/5,rdx,rdy,1));
+				}
+				this.radius *= 0.8;
+				this.dx *= 0.8;
+				this.dy *= 0.7;
+				console.log("asd");
+			}
+	}
 	}
 }
-CircleArray = []
-
+window.setInterval(function(){
+	for(var i=0; i < CircleArray.length; i++){
+		CircleArray[i].lt -= 0.01;
+		if(CircleArray[i].lt <= 0 && CircleArray[i].spark){
+			CircleArray.splice(i,1);
+		}
+	}
+},10);
+CircleArray = [];
 window.addEventListener('mousedown', function(e){
 	startx = e.x;
 	starty = e.y;
@@ -71,16 +110,14 @@ window.addEventListener('mouseup', function(e){
 	dy = -(endy-starty)/10;
 	console.log(`UP	dx: ${dx} dy: ${dy}`);
 	if(dx!=0||dy!=0)
-	CircleArray.push(new Circle(startx,starty,baseRadius*(1-(distance/diameter)),dx,dy));
+	CircleArray.push(new Circle(startx,starty,baseRadius*(1-(distance/diameter)),dx,dy,0));
 	mdown = 0;
 });
 window.addEventListener('mousemove', function(e){
 	if(mdown){
 	distance = Math.sqrt(Math.pow((endx-startx),2)+Math.pow((endy-starty),2));
-	console.log(diameter);
 	endx = e.x;
 	endy = e.y;
-	console.log("move");
 	}
 });
 function animate(){		//Loop that updates and reads buttons
