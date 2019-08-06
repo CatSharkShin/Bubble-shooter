@@ -13,9 +13,8 @@ var speed = 2;
 var mdown = 0;
 var diameter = Math.sqrt(Math.pow(window.innerHeight,2)+Math.pow(window.innerWidth,2));
 var baseRadius = diameter/42;
-var gravity = diameter/750;
-var lifetime = 1;
-
+var gravity = diameter/850;
+var lifetime = 0.5;
 
 function Circle(x,y,radius,dx,dy,spark){
 	this.x = x;
@@ -29,10 +28,14 @@ function Circle(x,y,radius,dx,dy,spark){
 	this.maxlt = this.lt;
 	
 	this.draw = function(){
-		c.strokeStyle = "#000000"
-		if(this.spark == 1){
+		if(this.spark){
 		c.fillStyle = `rgba(255,255,255,${this.lt/this.maxlt})`;
-		c.strokeStyle = "white";
+		c.shadowColor = 'white';
+		c.shadowBlur = 20000;
+		c.strokeStyle = "rgba(255,255,255,0)";
+		}else{
+			c.shadowColor = 'black';
+			c.shadowBlur = 200;
 		}
 		c.setLineDash([]);
 		c.beginPath();
@@ -130,11 +133,13 @@ function animate(){		//Loop that updates and reads buttons
 	c.lineCap = "round";
 	c.setLineDash([20+distance/100]);
 	c.lineWidth= 20;
-	c.strokeStyle = "#FFFFFF"
+	c.strokeStyle = "#FFFFFF";
 	c.beginPath();
 	c.moveTo(startx, starty);
 	c.lineTo(endx, endy);
 	c.stroke();
 	}
+	
+	c.strokeStyle = "#000000";
 }
 animate();
